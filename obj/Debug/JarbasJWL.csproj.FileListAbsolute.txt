@@ -42,7 +42,6 @@ C:\Jarbas\JarbasJWL.exe
 C:\Jarbas\JarbasJWL.pdb
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\JarbasJWL\obj\Debug\JarbasJWL.csproj.AssemblyReference.cache
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\JarbasJWL\obj\Debug\JarbasJWL.Form1.resources
-C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.csproj.AssemblyReference.cache
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.Form1.resources
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.Properties.Resources.resources
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.csproj.GenerateResource.cache
@@ -50,3 +49,5 @@ C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.csproj.C
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.exe
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.pdb
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.csproj.CopyComplete
+C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.Form2.resources
+C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.csproj.AssemblyReference.cache

@@ -21,6 +21,8 @@ namespace JarbasJWL
             InitializeComponent();
             string processName = "JWLibrary";
             bool firstRun = true;
+            Form2 frmsplash = new Form2();
+            frmsplash.Show();
 
             while (true)
             {
@@ -28,6 +30,7 @@ namespace JarbasJWL
                 if (ProcessExists(processName))
                 {
                     InitApp();
+                    frmsplash.Close();
                     break;
                 }
                 else
