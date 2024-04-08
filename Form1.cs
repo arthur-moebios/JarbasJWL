@@ -8,6 +8,9 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using ZOOM_SDK_DOTNET_WRAP;
 using System.Windows.Automation;
+using Microsoft.Win32;
+using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace JarbasJWL
 {
@@ -16,10 +19,38 @@ namespace JarbasJWL
         public Form1()
         {
             InitializeComponent();
-            InitApp();
+            string processName = "JWLibrary";
+            bool firstRun = true;
+
+            while (true)
+            {
+                // Verifica se o processo está em execução
+                if (ProcessExists(processName))
+                {
+                    InitApp();
+                    break;
+                }
+                else
+                {
+                    if (firstRun)
+                    {
+                        MessageBox.Show("O Jarbas depende do JW Library, por favor abra ele e em seguida o Jarbas irá iniciar");
+                        firstRun = false;
+                    }
+                }
+            }
+        }
+        
+
+        // Método para verificar se um processo está em execução
+        static bool ProcessExists(string processName)
+        {
+            // Obtém todos os processos com o nome especificado
+            Process[] processes = Process.GetProcessesByName(processName);
+            return processes.Length > 0; // Retorna true se pelo menos um processo for encontrado
         }
 
-         private const string JwLibProcessName = "JWLibrary";
+        private const string JwLibProcessName = "JWLibrary";
         private const string JwLibCaption = "JW Library";
         private bool AuthenticatedZoom = false;
 
@@ -42,6 +73,15 @@ namespace JarbasJWL
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Text = "Jarbas JWLibrary";
+
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Jarbas", true);
+            if (key != null)
+            {
+                tbIDReuniao.Text = (string)key.GetValue("ID");
+                tbSenha.Text = (string)key.GetValue("Senha");
+                tbNome.Text = (string)key.GetValue("Nome");
+                key.Close();
+            }
 
             // Definir o tempo atual em UTC e o tempo de expiração (adicionando 1 dia)
             var currentTimeUtc = DateTime.UtcNow;
@@ -104,7 +144,7 @@ namespace JarbasJWL
                     }
                     else//error handle
                     {
-                        MessageBox.Show("Erro na autenticação do SDK");
+                        MessageBox.Show("Erro na autenticação do SDK " + errorAuthn.ToString());
 
                     }
                 }
@@ -122,7 +162,8 @@ namespace JarbasJWL
             {
                 case MeetingStatus.MEETING_STATUS_ENDED:
                     {
-                        MessageBox.Show("A Reunião foi encerrada");
+                        Show();
+                        button1.Enabled = true;
                     }
                     break;
                 case MeetingStatus.MEETING_STATUS_FAILED:
@@ -244,16 +285,27 @@ namespace JarbasJWL
 
                         Console.WriteLine($"A janela está no monitor: {screen.DeviceName}");
                         string Monitor2 = "";
+                        int monitorCount = Screen.AllScreens.Length;
+
 
                         // Para encontrar o "outro monitor", podemos iterar sobre todos os monitores e encontrar aquele que não é o atual
                         foreach (var monitor in Screen.AllScreens)
                         {
-                            if (monitor.DeviceName != screen.DeviceName)
+                            if (monitorCount > 1)
+                            {
+                                if (monitor.DeviceName != screen.DeviceName)
+                                {
+                                    Monitor2 = monitor.DeviceName;
+                                    break; // Assumindo que há apenas dois monitores
+                                }
+                            }
+                            else
                             {
                                 Monitor2 = monitor.DeviceName;
-                                break; // Assumindo que há apenas dois monitores
                             }
                         }
+                        
+
                         Action action = new Action(() =>
                         {
                             CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableShareComputerSound(true);
@@ -333,8 +385,11 @@ namespace JarbasJWL
 
         private void button1_Click(object sender, EventArgs e)
         {
+            tbIDReuniao.Text = Regex.Replace(tbIDReuniao.Text, @"\D", "");
+
             if (AuthenticatedZoom)
             {
+                button1.Enabled = false;
                 JoinParam paramEntrar = new JoinParam();
                 paramEntrar.userType = SDKUserType.SDK_UT_WITHOUT_LOGIN;
                 JoinParam4WithoutLogin join_api_param = new JoinParam4WithoutLogin();
@@ -353,12 +408,19 @@ namespace JarbasJWL
                     {
                         Automation.AddStructureChangedEventHandler(jwLibraryWindow, TreeScope.Descendants, new StructureChangedEventHandler(OnStructureChanged));
                     }
+                    Hide();
 
                 }
                 else//error handle
                 {
                     MessageBox.Show("Erro ao entrar na Reunião: " + errorJoin.ToString());
+                    button1.Enabled = true;
                 }
+                RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Jarbas");
+                key.SetValue("ID", tbIDReuniao.Text);
+                key.SetValue("Senha", tbSenha.Text);
+                key.SetValue("Nome", tbNome.Text);
+                key.Close();
             }
         }
     }

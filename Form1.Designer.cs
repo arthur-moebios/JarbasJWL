@@ -135,6 +135,7 @@ namespace JarbasJWL
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(409, 290);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.pictureBox1);
