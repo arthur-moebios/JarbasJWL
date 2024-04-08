@@ -5,7 +5,7 @@ Esse aplicativo não aubstitui o uso das ferramentas oficiais.
 
 O Jarbas pedirá o ID da reunião Zoom que deseja entrar, a senha e um nome de usuário.
 
-Ao entrar na reunião e ser designado anfitrião ou co-anfitrião, toda imagem ou vídeo aberto no JW Library será automaticamente conpartilhado no Zoom.
+Ao entrar na reunião e ser designado anfitrião ou co-anfitrião, toda imagem ou vídeo aberto no JW Library será automaticamente compartilhado no Zoom.
 
 # Alguns detalhes:
 
