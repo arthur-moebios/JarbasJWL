@@ -50,4 +50,3 @@ C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.pdb
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.csproj.CopyComplete
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.frmPrincipal.resources
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.frmSplash.resources
-C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Debug\JarbasJWL.csproj.AssemblyReference.cache

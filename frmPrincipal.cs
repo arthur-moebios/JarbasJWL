@@ -63,14 +63,21 @@ namespace JarbasJWL
                     if (firstChild.Current.Name != "imagem")
                         Automation.AddStructureChangedEventHandler(mainWindowElement, TreeScope.Descendants, new StructureChangedEventHandler(OnStructureChanged));
                 }
+                if (WebViewElement != null)
+                {
+                    jwLibraryWindowHandle.value = (uint)(IntPtr)mainWindowElement.Current.NativeWindowHandle;
+                }
             }
 
-            TreeWalker walker = TreeWalker.ControlViewWalker;
-            AutomationElement parent = walker.GetParent(WebViewElement);
-
-            if (parent.Current.ClassName == "Windows.UI.Core.CoreWindow")
+            if (WebViewElement != null)
             {
-                jwLibraryWindowHandle.value = (uint)(IntPtr)parent.Current.NativeWindowHandle;
+                TreeWalker walker = TreeWalker.ControlViewWalker;
+                AutomationElement parent = walker.GetParent(WebViewElement);
+
+                if (parent.Current.ClassName == "Windows.UI.Core.CoreWindow")
+                {
+                    jwLibraryWindowHandle.value = (uint)(IntPtr)parent.Current.NativeWindowHandle;
+                }
             }
 
             frmsplash.Close();
