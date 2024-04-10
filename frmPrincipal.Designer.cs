@@ -1,7 +1,7 @@
 ﻿
 namespace JarbasJWL
 {
-    partial class Form1
+    partial class frmPrincipal
     {
         /// <summary>
         /// Variável de designer necessária.
@@ -29,7 +29,7 @@ namespace JarbasJWL
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmPrincipal));
             this.tbIDReuniao = new System.Windows.Forms.TextBox();
             this.tbSenha = new System.Windows.Forms.TextBox();
             this.tbNome = new System.Windows.Forms.TextBox();
@@ -50,7 +50,6 @@ namespace JarbasJWL
             this.tbIDReuniao.Name = "tbIDReuniao";
             this.tbIDReuniao.Size = new System.Drawing.Size(210, 26);
             this.tbIDReuniao.TabIndex = 0;
-            this.tbIDReuniao.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // tbSenha
             // 
@@ -130,8 +129,9 @@ namespace JarbasJWL
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox2.TabIndex = 8;
             this.pictureBox2.TabStop = false;
+            this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
-            // Form1
+            // frmPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -150,7 +150,7 @@ namespace JarbasJWL
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Name = "frmPrincipal";
             this.Text = "Jarbas JWLibrary Integration";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();

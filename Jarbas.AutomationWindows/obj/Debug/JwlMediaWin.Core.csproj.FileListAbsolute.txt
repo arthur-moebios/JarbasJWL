@@ -1,0 +1,13 @@
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\bin\Debug\JwlMediaWin.Core.dll
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\bin\Debug\JwlMediaWin.Core.pdb
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\bin\Debug\Interop.UIAutomationClient.dll
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\bin\Debug\UIAComWrapperX.dll
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\bin\Debug\WindowsInput.dll
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\bin\Debug\UIAComWrapperX.pdb
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\bin\Debug\WindowsInput.pdb
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\bin\Debug\WindowsInput.xml
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\obj\Debug\JwlMediaWin.Core.csproj.AssemblyReference.cache
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\obj\Debug\JwlMediaWin.Core.csproj.CoreCompileInputs.cache
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\obj\Debug\JwlMediaWin.Core.csproj.CopyComplete
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\obj\Debug\JwlMediaWin.Core.dll
+C:\Users\freit\Downloads\JwlMediaWin-master\JwlMediaWin.Core\obj\Debug\JwlMediaWin.Core.pdb

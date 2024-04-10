@@ -1,7 +1,7 @@
 ﻿
 namespace JarbasJWL
 {
-    partial class Form2
+    partial class frmSplash
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@ namespace JarbasJWL
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form2));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSplash));
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();

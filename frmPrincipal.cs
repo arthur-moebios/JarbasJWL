@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Security.Claims;
@@ -7,43 +6,83 @@ using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using ZOOM_SDK_DOTNET_WRAP;
-using System.Windows.Automation;
 using Microsoft.Win32;
 using System.Threading;
 using System.Text.RegularExpressions;
+using System.Windows.Automation;
+using System.Linq;
 
 namespace JarbasJWL
 {
-    public partial class Form1 : Form
+    public partial class frmPrincipal : Form
     {
-        public Form1()
+        private readonly string _appString = "JarbasJWL";
+        private Mutex _appMutex;
+        private HWNDDotNet jwLibraryWindowHandle;
+
+        [STAThread]
+        static void Main()
         {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new frmPrincipal());
+        }
+
+        public frmPrincipal()
+        {
+            if (AnotherInstanceRunning())
+            {
+                Application.Exit();
+            }
+
             InitializeComponent();
-            string processName = "JWLibrary";
-            bool firstRun = true;
-            Form2 frmsplash = new Form2();
+            frmSplash frmsplash = new frmSplash();
             frmsplash.Show();
 
-            while (true)
+            var jwLibraryProcess = Process.GetProcessesByName(JwLibProcessName).FirstOrDefault();
+            var jwLibraryWindow = AutomationElement.RootElement.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, JwLibCaption));
+
+            var conditionWebView = new AndCondition(
+               new PropertyCondition(AutomationElement.FrameworkIdProperty, "MicrosoftEdge"),
+               new PropertyCondition(AutomationElement.ClassNameProperty, "WebView"));
+
+            AutomationElement WebViewElement = jwLibraryWindow.FindFirst(TreeScope.Descendants, conditionWebView);
+
+            var conditionMain = new AndCondition(
+               new PropertyCondition(AutomationElement.NameProperty, JwLibCaption),
+               new PropertyCondition(AutomationElement.ClassNameProperty, "Windows.UI.Core.CoreWindow"));
+
+            AutomationElementCollection MainWindows = AutomationElement.RootElement.FindAll(TreeScope.Descendants, conditionMain);
+
+            foreach (AutomationElement mainWindowElement in MainWindows)
             {
-                // Verifica se o processo está em execução
-                if (ProcessExists(processName))
+                Condition conditionFirstChild = Condition.TrueCondition;
+                AutomationElement firstChild = mainWindowElement.FindFirst(TreeScope.Children, conditionFirstChild);
+                if (firstChild != null)
                 {
-                    InitApp();
-                    frmsplash.Close();
-                    break;
-                }
-                else
-                {
-                    if (firstRun)
-                    {
-                        MessageBox.Show("O Jarbas depende do JW Library, por favor abra ele e em seguida o Jarbas irá iniciar");
-                        firstRun = false;
-                    }
+                    if (firstChild.Current.Name != "imagem")
+                        Automation.AddStructureChangedEventHandler(mainWindowElement, TreeScope.Descendants, new StructureChangedEventHandler(OnStructureChanged));
                 }
             }
+
+            TreeWalker walker = TreeWalker.ControlViewWalker;
+            AutomationElement parent = walker.GetParent(WebViewElement);
+
+            if (parent.Current.ClassName == "Windows.UI.Core.CoreWindow")
+            {
+                jwLibraryWindowHandle.value = (uint)(IntPtr)parent.Current.NativeWindowHandle;
+            }
+
+            frmsplash.Close();
+            InitApp();
+            
         }
-        
+
+        private bool AnotherInstanceRunning()
+        {
+            _appMutex = new Mutex(true, _appString, out var newInstance);
+            return !newInstance;
+        }
 
         // Método para verificar se um processo está em execução
         static bool ProcessExists(string processName)
@@ -215,11 +254,6 @@ namespace JarbasJWL
         private void RegisterCallBack()
         {
             CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().Add_CB_onMeetingStatusChanged(onMeetingStatusChanged);
-            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingParticipantsController().Add_CB_onHostChangeNotification(onHostChangeNotification);
-            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingParticipantsController().Add_CB_onLowOrRaiseHandStatusChanged(onLowOrRaiseHandStatusChanged);
-            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingParticipantsController().Add_CB_onUserJoin(onUserJoin);
-            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingParticipantsController().Add_CB_onUserLeft(onUserLeft);
-            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingParticipantsController().Add_CB_onUserNamesChanged(onUserNamesChanged);
             CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingWaitingRoomController().Add_CB_onWaitingRoomUserJoin(onWatingRoomUserJoin);
         }
 
@@ -245,145 +279,14 @@ namespace JarbasJWL
             //todo
         }
 
-        void OnStructureChanged(object sender, StructureChangedEventArgs e)
+        private void onSharingStatus(SharingStatus status, uint userId)
         {
-            // Obter o elemento raiz (neste caso, a janela do JWLibrary)
-            AutomationElement rootElement = sender as AutomationElement;
 
-            if (rootElement == null)
-            {
-                return;
-            }
-
-            var condition2 = new AndCondition(
-                    new PropertyCondition(AutomationElement.AutomationIdProperty, "VolumeButton"),
-                    new PropertyCondition(AutomationElement.NameProperty, "Desativar áudio"),
-                    new PropertyCondition(AutomationElement.ClassNameProperty, "Button"));
-
-            AutomationElement IsVideo = rootElement.FindFirst(TreeScope.Descendants, condition2);
-
-            if (IsVideo == null)
-            {
-                // Tentar encontrar o elemento de interesse
-                var condition = new AndCondition(
-                new PropertyCondition(AutomationElement.NameProperty, "Watchtower.Apps.JWLibrary.Common.ViewModels.PlayMedia.ImageViewModel"),
-                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem),
-                new PropertyCondition(AutomationElement.ClassNameProperty, "FlipViewItem"));
-
-                AutomationElement IsImage = rootElement.FindFirst(TreeScope.Descendants, condition);
-
-
-                if (IsImage != null)
-                {
-                    // Elemento foi encontrado, execute sua ação aqui
-                    if (CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().CanStartShare())
-                    {
-                        IntPtr? mediaWindowHandle = FindMediaWindowHandle();
-
-                        // Obtém as dimensões da janela
-                        GetWindowRect(mediaWindowHandle.Value, out RECT rect);
-
-                        // Verifica em qual monitor a janela está localizada
-                        Screen screen = Screen.FromHandle(mediaWindowHandle.Value);
-
-                        Console.WriteLine($"A janela está no monitor: {screen.DeviceName}");
-                        string Monitor2 = "";
-                        int monitorCount = Screen.AllScreens.Length;
-
-
-                        // Para encontrar o "outro monitor", podemos iterar sobre todos os monitores e encontrar aquele que não é o atual
-                        foreach (var monitor in Screen.AllScreens)
-                        {
-                            if (monitorCount > 1)
-                            {
-                                if (monitor.DeviceName != screen.DeviceName)
-                                {
-                                    Monitor2 = monitor.DeviceName;
-                                    break; // Assumindo que há apenas dois monitores
-                                }
-                            }
-                            else
-                            {
-                                Monitor2 = monitor.DeviceName;
-                            }
-                        }
-                        
-
-                        Action action = new Action(() =>
-                        {
-                            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableShareComputerSound(true);
-                            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableOptimizeForFullScreenVideoClip(true);
-                            HWNDDotNet hwndSharedApp = default(HWNDDotNet);
-                            hwndSharedApp.value = checked((uint)(int)mediaWindowHandle.Value);
-                            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().StartMonitorShare(Monitor2);
-                        });
-                        Invoke(action);
-                    }
-                }
-            }
-            else
-            {
-                // Elemento foi encontrado, execute sua ação aqui
-                if (CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().CanStartShare())
-                {
-                    IntPtr? mediaWindowHandle = FindMediaWindowHandle();
-
-                    // Obtém as dimensões da janela
-                    GetWindowRect(mediaWindowHandle.Value, out RECT rect);
-
-                    // Verifica em qual monitor a janela está localizada
-                    Screen screen = Screen.FromHandle(mediaWindowHandle.Value);
-
-                    Console.WriteLine($"A janela está no monitor: {screen.DeviceName}");
-                    string Monitor2 = "";
-
-                    // Para encontrar o "outro monitor", podemos iterar sobre todos os monitores e encontrar aquele que não é o atual
-                    foreach (var monitor in Screen.AllScreens)
-                    {
-                        if (monitor.DeviceName != screen.DeviceName)
-                        {
-                            Monitor2 = monitor.DeviceName;
-                            break; // Assumindo que há apenas dois monitores
-                        }
-                    }
-                    System.Action action = new Action(() =>
-                    {
-                        CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableShareComputerSound(true);
-                        CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableOptimizeForFullScreenVideoClip(true);
-                        HWNDDotNet hwndSharedApp = default(HWNDDotNet);
-                        hwndSharedApp.value = checked((uint)(int)mediaWindowHandle.Value);
-                        CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().StartMonitorShare(Monitor2);
-                    });
-                    Invoke(action);
-
-                }
-            }
         }
 
         public void onWatingRoomUserJoin(uint userID)
         {
             CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingWaitingRoomController().AdmitToMeeting(userID);
-        }
-
-        // Método simplificado para retornar o handle da janela de mídia
-        public IntPtr? FindMediaWindowHandle()
-        {
-            var jwLibraryProcess = Process.GetProcessesByName(JwLibProcessName).FirstOrDefault();
-            var jwLibraryWindow = AutomationElement.RootElement.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, JwLibCaption));
-
-            if (jwLibraryWindow != null)
-            {
-                IntPtr hwnd = new IntPtr(jwLibraryWindow.Current.NativeWindowHandle);
-                return hwnd;
-            }
-
-            Console.WriteLine("Janela de mídia não encontrada.");
-            return null;
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -404,14 +307,6 @@ namespace JarbasJWL
                 SDKError errorJoin = CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().Join(paramEntrar);
                 if (SDKError.SDKERR_SUCCESS == errorJoin)
                 {
-                    var jwLibraryProcess = Process.GetProcessesByName(JwLibProcessName).FirstOrDefault();
-                    var jwLibraryWindow = AutomationElement.RootElement.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, JwLibCaption));
-
-                    if (jwLibraryWindow != null)
-                    {
-                        Automation.AddStructureChangedEventHandler(jwLibraryWindow, TreeScope.Descendants, new StructureChangedEventHandler(OnStructureChanged));
-                    }
-                    Hide();
 
                 }
                 else//error handle
@@ -425,6 +320,71 @@ namespace JarbasJWL
                 key.SetValue("Nome", tbNome.Text);
                 key.Close();
             }
+        }
+
+        private void OnStructureChanged(object sender, StructureChangedEventArgs e)
+        {
+            AutomationElement jwRootElement = sender as AutomationElement;
+
+            var condition2 = new AndCondition(
+                    new PropertyCondition(AutomationElement.AutomationIdProperty, "VolumeButton"),
+                    new PropertyCondition(AutomationElement.NameProperty, "Desativar áudio"),
+                    new PropertyCondition(AutomationElement.ClassNameProperty, "Button"));
+
+            AutomationElement IsVideo = jwRootElement.FindFirst(TreeScope.Descendants, condition2);
+
+            if (IsVideo == null)
+            {
+                // Tentar encontrar o elemento de interesse
+                var condition = new AndCondition(
+                new PropertyCondition(AutomationElement.NameProperty, "Watchtower.Apps.JWLibrary.Common.ViewModels.PlayMedia.ImageViewModel"),
+                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.ListItem),
+                new PropertyCondition(AutomationElement.ClassNameProperty, "FlipViewItem"));
+
+                AutomationElement IsImage = jwRootElement.FindFirst(TreeScope.Descendants, condition);
+
+
+                if (IsImage != null)
+                {
+                    // Elemento foi encontrado, execute sua ação aqui
+                    if (CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().CanStartShare())
+                    {
+                        Action action = new Action(() =>
+                        {
+                            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableShareComputerSound(true);
+                            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableOptimizeForFullScreenVideoClip(true);
+                            CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().StartAppShare(jwLibraryWindowHandle);
+                        });
+                        Invoke(action);
+                    }
+                }
+            }
+            else
+            {
+
+                // Elemento foi encontrado, execute sua ação aqui
+                if (CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().CanStartShare())
+                {
+                    System.Action action = new Action(() =>
+                    {
+                        CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableShareComputerSound(true);
+                        CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableOptimizeForFullScreenVideoClip(true);
+                        CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().StartAppShare(jwLibraryWindowHandle);
+                    });
+                    Invoke(action);
+                }
+            }
+        }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+            Action action = new Action(() =>
+            {
+                CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableShareComputerSound(true);
+                CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableOptimizeForFullScreenVideoClip(true);
+                CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().StartAppShare(jwLibraryWindowHandle);
+            });
+            Invoke(action);
         }
     }
 }

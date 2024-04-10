@@ -1,0 +1,6 @@
+C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\Jarbas.AutomationWindows\obj\Debug\Jarbas.AutomationWindows.csproj.CoreCompileInputs.cache
+C:\Jarbas\JarbasJWL.AutomationWindows.dll
+C:\Jarbas\JarbasJWL.AutomationWindows.pdb
+C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\Jarbas.AutomationWindows\obj\Debug\Jarbas.AutomationWindows.csproj.CopyComplete
+C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\Jarbas.AutomationWindows\obj\Debug\JarbasJWL.AutomationWindows.dll
+C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\Jarbas.AutomationWindows\obj\Debug\JarbasJWL.AutomationWindows.pdb

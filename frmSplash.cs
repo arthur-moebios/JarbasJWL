@@ -11,9 +11,9 @@ using System.Windows.Forms;
 
 namespace JarbasJWL
 {
-    public partial class Form2 : Form
+    public partial class frmSplash : Form
     {
-        public Form2()
+        public frmSplash()
         {
             InitializeComponent();
         }
