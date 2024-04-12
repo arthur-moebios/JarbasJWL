@@ -11,6 +11,7 @@ using System.Threading;
 using System.Text.RegularExpressions;
 using System.Windows.Automation;
 using System.Linq;
+using System.ComponentModel;
 
 namespace JarbasJWL
 {
@@ -19,13 +20,14 @@ namespace JarbasJWL
         private readonly string _appString = "JarbasJWL";
         private Mutex _appMutex;
         private HWNDDotNet jwLibraryWindowHandle;
+        private Thread splashThread;
 
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmPrincipal());
+            Application.Run(new frmPrincipal());            
         }
 
         public frmPrincipal()
@@ -33,56 +35,81 @@ namespace JarbasJWL
             if (AnotherInstanceRunning())
             {
                 Application.Exit();
-            }
+            }           
 
             InitializeComponent();
+            InitApp();
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmPrincipal_FormClosed);
+            
+            // Inicia a thread para exibir o formulário de splash
+            splashThread = new Thread(new ThreadStart(InitializeProcess));
+            splashThread.Start();            
+        }
+
+        private void InitializeProcess()
+        {
+            Invoke(new Action(() => this.Visible = false));
             frmSplash frmsplash = new frmSplash();
-            frmsplash.Show();
+            frmsplash.Show();            
+            var jwLibraryProcess = Process.GetProcessesByName(JwLibProcessName);
 
-            var jwLibraryProcess = Process.GetProcessesByName(JwLibProcessName).FirstOrDefault();
-            var jwLibraryWindow = AutomationElement.RootElement.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, JwLibCaption));
-
-            var conditionWebView = new AndCondition(
-               new PropertyCondition(AutomationElement.FrameworkIdProperty, "MicrosoftEdge"),
-               new PropertyCondition(AutomationElement.ClassNameProperty, "WebView"));
-
-            AutomationElement WebViewElement = jwLibraryWindow.FindFirst(TreeScope.Descendants, conditionWebView);
-
-            var conditionMain = new AndCondition(
-               new PropertyCondition(AutomationElement.NameProperty, JwLibCaption),
-               new PropertyCondition(AutomationElement.ClassNameProperty, "Windows.UI.Core.CoreWindow"));
-
-            AutomationElementCollection MainWindows = AutomationElement.RootElement.FindAll(TreeScope.Descendants, conditionMain);
-
-            foreach (AutomationElement mainWindowElement in MainWindows)
+            while (jwLibraryProcess.Length == 0)
             {
-                Condition conditionFirstChild = Condition.TrueCondition;
-                AutomationElement firstChild = mainWindowElement.FindFirst(TreeScope.Children, conditionFirstChild);
-                if (firstChild != null)
+                jwLibraryProcess = Process.GetProcessesByName(JwLibProcessName);
+                System.Threading.Thread.Sleep(1000); // 1 segundo
+            }
+
+            frmsplash.Hide();
+
+            if (jwLibraryProcess != null)
+            {
+                var jwLibraryWindow = AutomationElement.RootElement.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, JwLibCaption));
+
+                var conditionWebView = new AndCondition(
+                   new PropertyCondition(AutomationElement.FrameworkIdProperty, "MicrosoftEdge"),
+                   new PropertyCondition(AutomationElement.ClassNameProperty, "WebView"));
+
+                AutomationElement WebViewElement = jwLibraryWindow.FindFirst(TreeScope.Descendants, conditionWebView);
+
+                var conditionMain = new AndCondition(
+                   new PropertyCondition(AutomationElement.NameProperty, JwLibCaption),
+                   new PropertyCondition(AutomationElement.ClassNameProperty, "Windows.UI.Core.CoreWindow"));
+
+                AutomationElementCollection MainWindows = AutomationElement.RootElement.FindAll(TreeScope.Descendants, conditionMain);
+
+                foreach (AutomationElement mainWindowElement in MainWindows)
                 {
-                    if (firstChild.Current.Name != "imagem")
-                        Automation.AddStructureChangedEventHandler(mainWindowElement, TreeScope.Descendants, new StructureChangedEventHandler(OnStructureChanged));
+                    Condition conditionFirstChild = Condition.TrueCondition;
+                    AutomationElement firstChild = mainWindowElement.FindFirst(TreeScope.Children, conditionFirstChild);
+                    if (firstChild != null)
+                    {
+                        if (firstChild.Current.Name != "imagem")
+                            Automation.AddStructureChangedEventHandler(mainWindowElement, TreeScope.Descendants, new StructureChangedEventHandler(OnStructureChanged));
+                    }
+                    if (WebViewElement != null)
+                    {
+                        jwLibraryWindowHandle.value = (uint)(IntPtr)mainWindowElement.Current.NativeWindowHandle;
+                    }
                 }
+
                 if (WebViewElement != null)
                 {
-                    jwLibraryWindowHandle.value = (uint)(IntPtr)mainWindowElement.Current.NativeWindowHandle;
+                    TreeWalker walker = TreeWalker.ControlViewWalker;
+                    AutomationElement parent = walker.GetParent(WebViewElement);
+
+                    if (parent.Current.ClassName == "Windows.UI.Core.CoreWindow")
+                    {
+                        jwLibraryWindowHandle.value = (uint)(IntPtr)parent.Current.NativeWindowHandle;
+                    }
                 }
             }
+            // Exibe o formulário principal após a inicialização estar concluída
+            Invoke(new Action(() => this.Visible = true));           
+        }
 
-            if (WebViewElement != null)
-            {
-                TreeWalker walker = TreeWalker.ControlViewWalker;
-                AutomationElement parent = walker.GetParent(WebViewElement);
-
-                if (parent.Current.ClassName == "Windows.UI.Core.CoreWindow")
-                {
-                    jwLibraryWindowHandle.value = (uint)(IntPtr)parent.Current.NativeWindowHandle;
-                }
-            }
-
-            frmsplash.Close();
-            InitApp();
-            
+        private void frmPrincipal_FormClosed(object sender, FormClosingEventArgs e)
+        {
+            Environment.Exit(0);
         }
 
         private bool AnotherInstanceRunning()
@@ -102,6 +129,9 @@ namespace JarbasJWL
         private const string JwLibProcessName = "JWLibrary";
         private const string JwLibCaption = "JW Library";
         private bool AuthenticatedZoom = false;
+
+        public static BackgroundWorker worker { get; private set; }        
+        public Process jwLibraryProcess { get; private set; }
 
         // Importação da API do Windows para obter as dimensões da janela
         [System.Runtime.InteropServices.DllImport("user32.dll")]

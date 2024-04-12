@@ -17,6 +17,11 @@ namespace JarbasJWL
         {
             InitializeComponent();
         }
+
+        private void frmSplash_Close(object sender, FormClosingEventArgs e)
+        {
+            Environment.Exit(0);
+        }
     }
 }
 
