@@ -23,6 +23,10 @@ O Jarbas JWL é um aplicativo open source que oferece integração com o JW Libr
 2. Compile o aplicativo.
 3. Instale o aplicativo resultante.
 
+Ou
+
+Baixe a última versão em releases
+
 ## Como Usar
 
 1. Certifique-se de que o JWLMediaWin está instalado e configurado corretamente.
