@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="25551e38-eb61-4313-a0f6-925cca5d12d2" name="Changes" comment="" />
+    <list default="true" id="25551e38-eb61-4313-a0f6-925cca5d12d2" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.vs/JarbasJWL/v16/.suo" beforeDir="false" afterPath="$PROJECT_DIR$/.vs/JarbasJWL/v16/.suo" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/App.config" beforeDir="false" afterPath="$PROJECT_DIR$/App.config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/JarbasJWL.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/JarbasJWL.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frmPrincipal.Designer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/frmPrincipal.Designer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frmPrincipal.cs" beforeDir="false" afterPath="$PROJECT_DIR$/frmPrincipal.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/DesignTimeResolveAssemblyReferences.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/DesignTimeResolveAssemblyReferences.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/JarbasJWL.csproj.AssemblyReference.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/JarbasJWL.csproj.AssemblyReference.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/JarbasJWL.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/JarbasJWL.csproj.CoreCompileInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/JarbasJWL.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/JarbasJWL.csproj.FileListAbsolute.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/JarbasJWL.csproj.GenerateResource.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/JarbasJWL.csproj.GenerateResource.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/JarbasJWL.exe" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/JarbasJWL.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/JarbasJWL.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/JarbasJWL.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Release/JarbasJWL.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Release/JarbasJWL.csproj.FileListAbsolute.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Release/JarbasJWL.exe" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Release/JarbasJWL.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Release/JarbasJWL.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Release/JarbasJWL.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages.config" beforeDir="false" afterPath="$PROJECT_DIR$/packages.config" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,24 +34,25 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="C:\php\php.exe" />
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="2epKgt5VAnuQqBJRScvTU6kJZe5" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "ssh.settings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;ssh.settings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -50,7 +69,11 @@
       <option name="presentableId" value="Default" />
       <updated>1712596194239</updated>
       <workItem from="1712596196858" duration="4000" />
+      <workItem from="1713217866596" duration="195000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
 </project>

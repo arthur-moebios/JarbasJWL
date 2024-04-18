@@ -12,6 +12,13 @@ using System.Text.RegularExpressions;
 using System.Windows.Automation;
 using System.Linq;
 using System.ComponentModel;
+using System.Web;
+using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Microsoft.VisualStudio.Services.OAuth;
+using System.Text.Json;
+using System.Security.Cryptography;
 
 namespace JarbasJWL
 {
@@ -20,14 +27,13 @@ namespace JarbasJWL
         private readonly string _appString = "JarbasJWL";
         private Mutex _appMutex;
         private HWNDDotNet jwLibraryWindowHandle;
-        private Thread splashThread;
 
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmPrincipal());            
+            Application.Run(new frmPrincipal());
         }
 
         public frmPrincipal()
@@ -35,31 +41,32 @@ namespace JarbasJWL
             if (AnotherInstanceRunning())
             {
                 Application.Exit();
-            }           
-
+            }
+            
             InitializeComponent();
+
+            Task.Run(() =>
+            {
+                while (!ProcessExists(JwLibProcessName))
+                {
+                    System.Threading.Thread.Sleep(1000);
+                }
+
+                // Assim que o processo for encontrado, atualize a UI
+                Invoke((Action)(() =>
+                {
+                    InitializeProcess();
+                    pbDetecting.Visible = false;
+                    lbDetecting.Visible = false;
+                }));
+            });
             InitApp();
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmPrincipal_FormClosed);
-            
-            // Inicia a thread para exibir o formulário de splash
-            splashThread = new Thread(new ThreadStart(InitializeProcess));
-            splashThread.Start();            
         }
 
         private void InitializeProcess()
         {
-            Invoke(new Action(() => this.Visible = false));
-            frmSplash frmsplash = new frmSplash();
-            frmsplash.Show();            
             var jwLibraryProcess = Process.GetProcessesByName(JwLibProcessName);
-
-            while (jwLibraryProcess.Length == 0)
-            {
-                jwLibraryProcess = Process.GetProcessesByName(JwLibProcessName);
-                System.Threading.Thread.Sleep(1000); // 1 segundo
-            }
-
-            frmsplash.Hide();
 
             if (jwLibraryProcess != null)
             {
@@ -103,8 +110,6 @@ namespace JarbasJWL
                     }
                 }
             }
-            // Exibe o formulário principal após a inicialização estar concluída
-            Invoke(new Action(() => this.Visible = true));           
         }
 
         private void frmPrincipal_FormClosed(object sender, FormClosingEventArgs e)
@@ -128,9 +133,8 @@ namespace JarbasJWL
 
         private const string JwLibProcessName = "JWLibrary";
         private const string JwLibCaption = "JW Library";
-        private bool AuthenticatedZoom = false;
 
-        public static BackgroundWorker worker { get; private set; }        
+        public static BackgroundWorker worker { get; private set; }
         public Process jwLibraryProcess { get; private set; }
 
         // Importação da API do Windows para obter as dimensões da janela
@@ -156,82 +160,13 @@ namespace JarbasJWL
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Jarbas", true);
             if (key != null)
             {
+                tbClientID.Text = (string)key.GetValue("CID");
+                tbClientSecret.Text = (string)key.GetValue("CSecret");
                 tbIDReuniao.Text = (string)key.GetValue("ID");
                 tbSenha.Text = (string)key.GetValue("Senha");
                 tbNome.Text = (string)key.GetValue("Nome");
                 key.Close();
-            }
-
-            // Definir o tempo atual em UTC e o tempo de expiração (adicionando 1 dia)
-            var currentTimeUtc = DateTime.UtcNow;
-            var expirationTimeUtc = currentTimeUtc.AddDays(1);
-
-            // Converter para GMT-3
-            var gmtMinus3Hours = TimeSpan.FromHours(-3);
-            var currentTimeGmtMinus3 = currentTimeUtc.Add(gmtMinus3Hours);
-            var expirationTimeGmtMinus3 = expirationTimeUtc.Add(gmtMinus3Hours);
-
-            // Converter para epoch time considerando o fuso GMT-3
-            var epochStartTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            var iat = (long)(currentTimeGmtMinus3 - epochStartTime).TotalSeconds;
-            var exp = (long)(expirationTimeGmtMinus3 - epochStartTime).TotalSeconds;
-
-            // Chave secreta para a assinatura
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("4PBb61bRe7nXi8maNzZyenvOguudWo37"));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            // Criar claims baseadas no payload fornecido
-            var claims = new[]
-            {
-            new Claim("appKey", "8EqLCV_7Q8GQVYKM5SC96g"),
-            new Claim(JwtRegisteredClaimNames.Iat, iat.ToString(), ClaimValueTypes.Integer64),
-            new Claim(JwtRegisteredClaimNames.Exp, exp.ToString(), ClaimValueTypes.Integer64),
-            new Claim("tokenExp", exp.ToString(), ClaimValueTypes.Integer64)
-            };
-
-            // Criar o token JWT
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(1),
-                signingCredentials: credentials
-            );
-
-            // Gerar o token
-            var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
-
-            //init sdk
-            {
-                InitParam param = new InitParam();
-                param.web_domain = "https://zoom.us";
-                param.language_id = SDK_LANGUAGE_ID.LANGUAGE_Portuguese;
-                SDKError err = CZoomSDKeDotNetWrap.Instance.Initialize(param);
-
-                if (SDKError.SDKERR_SUCCESS == err)
-                {
-                    //register callback
-                    CZoomSDKeDotNetWrap.Instance.GetAuthServiceWrap().Add_CB_onAuthenticationReturn(onAuthenticationReturn);
-                    CZoomSDKeDotNetWrap.Instance.GetAuthServiceWrap().Add_CB_onLoginRet(onLoginRet);
-                    CZoomSDKeDotNetWrap.Instance.GetAuthServiceWrap().Add_CB_onLogout(onLogout);
-                    //
-                    AuthContext Authparam = new AuthContext();
-                    Authparam.jwt_token = jwtToken;
-                    SDKError errorAuthn = CZoomSDKeDotNetWrap.Instance.GetAuthServiceWrap().SDKAuth(Authparam);
-
-                    if (SDKError.SDKERR_SUCCESS == errorAuthn)
-                    {
-
-                    }
-                    else//error handle
-                    {
-                        MessageBox.Show("Erro na autenticação do SDK " + errorAuthn.ToString());
-
-                    }
-                }
-                else//error handle.todo
-                {
-                    MessageBox.Show("Erro na inicialização do SDK " + err.ToString());
-                }
-            }
+            }            
         }
 
         //onMeetingStatusChanged
@@ -239,18 +174,77 @@ namespace JarbasJWL
         {
             switch (status)
             {
-                case MeetingStatus.MEETING_STATUS_ENDED:
-                    {
-                        Show();
-                        button1.Enabled = true;
-                    }
+                case MeetingStatus.MEETING_STATUS_IDLE:
+                    pbZoom.Visible = false;
+                    pbDetecting.Visible = false;
+                    lbDetecting.Visible = false;
+                    lbDetecting.Text = "Não há uma reunião.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_CONNECTING:
+                    lbDetecting.Text = "Conectando ao servidor Zoom.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_WAITINGFORHOST:
+                    lbDetecting.Text = "Aguardando o Anfitrião iniciar a reunião.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_INMEETING:
+                    lbDetecting.Text = "Reunião em transmissão.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_DISCONNECTING:
+                    pbZoom.Visible = false;
+                    pbDetecting.Visible = false;
+                    lbDetecting.Visible = false;
+                    lbDetecting.Text = "Desconectando do servidor.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_RECONNECTING:
+                    lbDetecting.Text = "Reconectando a reunião.";
                     break;
                 case MeetingStatus.MEETING_STATUS_FAILED:
-                    {
-                        MessageBox.Show("A Reunião falhou");
-                    }
+                    pbZoom.Visible = false;
+                    pbDetecting.Visible = false;
+                    lbDetecting.Visible = false;
+                    lbDetecting.Text = "Falha ao conectar ao servidor.";
                     break;
-                default://todo
+                case MeetingStatus.MEETING_STATUS_ENDED:
+                    pbZoom.Visible = false;
+                    pbDetecting.Visible = false;
+                    lbDetecting.Visible = false;
+                    lbDetecting.Text = "Reunião encerrada.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_UNKNOW:
+                    pbZoom.Visible = false;
+                    pbDetecting.Visible = false;
+                    lbDetecting.Visible = false;
+                    lbDetecting.Text = "Erro desconhecido.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_LOCKED:
+                    lbDetecting.Text = "A reunião está bloqueada para novas conexões.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_UNLOCKED:
+                    lbDetecting.Text = "A reunião está desbloqueada para novas conexões.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_IN_WAITING_ROOM:
+                    lbDetecting.Text = "Participantes que iniciaram antes da reunião começar estarão na sala de espera.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_WEBINAR_PROMOTE:
+                    lbDetecting.Text = "Upgrade the attendees to panelist in webinar.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_WEBINAR_DEPROMOTE:
+                    lbDetecting.Text = "Downgrade the attendees from the panelist.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_JOIN_BREAKOUT_ROOM:
+                    lbDetecting.Text = "Entrando na sala simultânea.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_LEAVE_BREAKOUT_ROOM:
+                    lbDetecting.Text = "Saindo da sala simultânea.";
+                    break;
+                case MeetingStatus.MEETING_STATUS_WAITING_EXTERNAL_SESSION_KEY:
+                    lbDetecting.Text = "Waiting for the additional secret key.";
+                    break;
+                default:
+                    pbZoom.Visible = false;
+                    pbDetecting.Visible = false;
+                    lbDetecting.Visible = false;
+                    lbDetecting.Text = "Status desconhecido.";
                     break;
             }
         }
@@ -296,10 +290,26 @@ namespace JarbasJWL
 
         public void onAuthenticationReturn(AuthResult ret)
         {
+            pbZoom.Visible = true;
+            lbDetecting.Text = "Entrando na reunião";
+            lbDetecting.Visible = true;
+
             if (AuthResult.AUTHRET_SUCCESS == ret)
             {
+                tbIDReuniao.Text = Regex.Replace(tbIDReuniao.Text, @"\D", "");
+
                 RegisterCallBack();
-                AuthenticatedZoom = true;
+                JoinParam joinparam = new JoinParam();
+                joinparam.userType = SDKUserType.SDK_UT_WITHOUT_LOGIN;
+                JoinParam4WithoutLogin join_withoutlogin_param = new JoinParam4WithoutLogin();
+                join_withoutlogin_param.meetingNumber = UInt64.Parse(tbIDReuniao.Text);
+                join_withoutlogin_param.psw = tbSenha.Text;
+                join_withoutlogin_param.userName = tbNome.Text;
+                joinparam.withoutloginJoin = join_withoutlogin_param;
+
+                ZOOM_SDK_DOTNET_WRAP.SDKError joinerr = ZOOM_SDK_DOTNET_WRAP.CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().Join(joinparam);
+                if (joinerr != SDKError.SDKERR_SUCCESS)
+                    MessageBox.Show(joinerr.ToString());
             }
             else//error handle.todo
             {
@@ -307,9 +317,9 @@ namespace JarbasJWL
                 MessageBox.Show(resultname.ToString());
             }
         }
-        public void onLoginRet(LOGINSTATUS ret, IAccountInfo pAccountInfo, LOGINFAILREASON reason)
+        public void OnLoginRet(LOGINSTATUS ret, IAccountInfo pAccountInfo, LOGINFAILREASON reason)
         {
-            //todo
+
         }
         public void onLogout()
         {
@@ -324,39 +334,6 @@ namespace JarbasJWL
         public void onWatingRoomUserJoin(uint userID)
         {
             CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingWaitingRoomController().AdmitToMeeting(userID);
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            tbIDReuniao.Text = Regex.Replace(tbIDReuniao.Text, @"\D", "");
-
-            if (AuthenticatedZoom)
-            {
-                button1.Enabled = false;
-                JoinParam paramEntrar = new JoinParam();
-                paramEntrar.userType = SDKUserType.SDK_UT_WITHOUT_LOGIN;
-                JoinParam4WithoutLogin join_api_param = new JoinParam4WithoutLogin();
-                join_api_param.meetingNumber = UInt64.Parse(tbIDReuniao.Text);
-                join_api_param.userName = tbNome.Text;
-                join_api_param.psw = tbSenha.Text;
-                paramEntrar.withoutloginJoin = join_api_param;
-
-                SDKError errorJoin = CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().Join(paramEntrar);
-                if (SDKError.SDKERR_SUCCESS == errorJoin)
-                {
-
-                }
-                else//error handle
-                {
-                    MessageBox.Show("Erro ao entrar na Reunião: " + errorJoin.ToString());
-                    button1.Enabled = true;
-                }
-                RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Jarbas");
-                key.SetValue("ID", tbIDReuniao.Text);
-                key.SetValue("Senha", tbSenha.Text);
-                key.SetValue("Nome", tbNome.Text);
-                key.Close();
-            }
         }
 
         private void OnStructureChanged(object sender, StructureChangedEventArgs e)
@@ -412,16 +389,87 @@ namespace JarbasJWL
                 }
             }
         }
-
-        private void pictureBox2_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            Action action = new Action(() =>
+            // Definir o tempo atual em UTC e o tempo de expiração (adicionando 1 dia)
+            var currentTimeUtc = DateTime.UtcNow;
+            var expirationTimeUtc = currentTimeUtc.AddDays(1);
+
+            // Converter para GMT-3
+            var gmtMinus3Hours = TimeSpan.FromHours(-3);
+            var currentTimeGmtMinus3 = currentTimeUtc.Add(gmtMinus3Hours);
+            var expirationTimeGmtMinus3 = expirationTimeUtc.Add(gmtMinus3Hours);
+
+            // Converter para epoch time considerando o fuso GMT-3
+            var epochStartTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var iat = (long)(currentTimeGmtMinus3 - epochStartTime).TotalSeconds;
+            var exp = (long)(expirationTimeGmtMinus3 - epochStartTime).TotalSeconds;
+
+            // Chave secreta para a assinatura
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tbClientSecret.Text));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            // Criar claims baseadas no payload fornecido
+            var claims = new[]
             {
-                CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableShareComputerSound(true);
-                CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().EnableOptimizeForFullScreenVideoClip(true);
-                CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().GetMeetingShareController().StartAppShare(jwLibraryWindowHandle);
-            });
-            Invoke(action);
+            new Claim("appKey", tbClientID.Text),
+            new Claim(JwtRegisteredClaimNames.Iat, iat.ToString(), ClaimValueTypes.Integer64),
+            new Claim(JwtRegisteredClaimNames.Exp, exp.ToString(), ClaimValueTypes.Integer64),
+            new Claim("tokenExp", exp.ToString(), ClaimValueTypes.Integer64)
+            };
+
+            // Criar o token JWT
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(1),
+                signingCredentials: credentials
+            );
+
+            // Gerar o token
+            var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+            RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Jarbas");
+            key.SetValue("CID", tbClientID.Text);
+            key.SetValue("CSecret", tbClientSecret.Text);
+            key.SetValue("ID", tbIDReuniao.Text);
+            key.SetValue("Senha", tbSenha.Text);
+            key.SetValue("Nome", tbNome.Text);
+            key.Close();
+
+            //init sdk
+            {
+                InitParam param = new InitParam();
+                param.web_domain = "https://zoom.us";
+                param.language_id = SDK_LANGUAGE_ID.LANGUAGE_Portuguese;
+                SDKError err = CZoomSDKeDotNetWrap.Instance.Initialize(param);
+
+                if (SDKError.SDKERR_SUCCESS == err)
+                {
+                    //register callback
+                    CZoomSDKeDotNetWrap.Instance.GetAuthServiceWrap().Add_CB_onAuthenticationReturn(onAuthenticationReturn);
+                    CZoomSDKeDotNetWrap.Instance.GetAuthServiceWrap().Add_CB_onLogout(onLogout);
+                    //
+                    AuthContext Authparam = new AuthContext();
+                    Authparam.jwt_token = jwtToken;
+                    SDKError errorAuthn = CZoomSDKeDotNetWrap.Instance.GetAuthServiceWrap().SDKAuth(Authparam);
+
+                    if (SDKError.SDKERR_SUCCESS == errorAuthn)
+                    {
+                        pbZoom.Visible = true;
+                        lbDetecting.Text = "Autenticando no Zoom";
+                        lbDetecting.Visible = true;
+                    }
+                    else//error handle
+                    {
+                        MessageBox.Show("Erro na autenticação do SDK " + errorAuthn.ToString());
+
+                    }
+                }
+                else//error handle.todo
+                {
+                    MessageBox.Show("Erro na inicialização do SDK " + err.ToString());
+                }
+            }            
         }
     }
 }

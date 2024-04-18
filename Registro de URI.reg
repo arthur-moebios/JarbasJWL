@@ -1,0 +1,12 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\jarbas]
+@="URL:Jarbas Protocol"
+"URL Protocol"=""
+
+[HKEY_CLASSES_ROOT\jarbas\shell]
+
+[HKEY_CLASSES_ROOT\jarbas\shell\open]
+
+[HKEY_CLASSES_ROOT\jarbas\shell\open\command]
+@="\"C:\\Jarbas\\JarbasJWL.exe\" \"%1\""

@@ -1,12 +1,12 @@
 C:\Jarbas\JarbasJWL.exe.config
 C:\Jarbas\JarbasJWL.exe
 C:\Jarbas\JarbasJWL.pdb
-C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.csproj.AssemblyReference.cache
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.frmPrincipal.resources
-C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.frmSplash.resources
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.Properties.Resources.resources
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.csproj.GenerateResource.cache
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.csproj.CoreCompileInputs.cache
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.csproj.CopyComplete
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.exe
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.pdb
+C:\Jarbas\runtimes\win-x86\native\WebView2Loader.dll
+C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.csproj.AssemblyReference.cache
