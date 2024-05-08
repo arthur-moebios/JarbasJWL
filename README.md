@@ -16,18 +16,9 @@ O Jarbas JWL é um aplicativo open source que oferece integração com o JW Libr
 ## Pré-requisitos
 
 - [JWLMediaWin](https://github.com/AntonyCorbett/JwlMediaWin): Recomendamos o uso do JWLMediaWin para ajustar as telas do JW Library.
-- [Cadastro em Zoom Marketplace](https://marketplace.zoom.us/): Use sua conta que possui a reunião utilizada para se cadastrar no MarketPlace
+- [Cadastro no Zoom.us](https://marketplace.zoom.us/): Use sua conta que possui a reunião que será ingressada ou iniciada
 
-- Após o login no MarketPlace, clique em "Manage"
-- Clique em "Develop" e "Build App"
-- ![image](https://github.com/arthur-moebios/JarbasJWL/assets/19708484/5007cab3-bc79-4554-a0fd-f9c56fc1c291)
-
-- Na Tela que aparecer salve Client ID e Client Secret
-- ![image](https://github.com/arthur-moebios/JarbasJWL/assets/19708484/12055f1f-d03c-42a5-a149-9756dfb9a00a)
-
-- Use esses dados no Jarbas junto com sua ID e Senha de reunião
-- ![image](https://github.com/arthur-moebios/JarbasJWL/assets/19708484/ca6ef9c2-26de-499d-a2ad-651a27dc0513)
-
+- Após autorizar o app em sua conta Zoom
 - Clique em "Entrar" e aguarde
 
 
