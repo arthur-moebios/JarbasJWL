@@ -160,8 +160,6 @@ namespace JarbasJWL
             RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Jarbas", true);
             if (key != null)
             {
-                tbClientID.Text = (string)key.GetValue("CID");
-                tbClientSecret.Text = (string)key.GetValue("CSecret");
                 tbIDReuniao.Text = (string)key.GetValue("ID");
                 tbSenha.Text = (string)key.GetValue("Senha");
                 tbNome.Text = (string)key.GetValue("Nome");
@@ -299,17 +297,48 @@ namespace JarbasJWL
                 tbIDReuniao.Text = Regex.Replace(tbIDReuniao.Text, @"\D", "");
 
                 RegisterCallBack();
-                JoinParam joinparam = new JoinParam();
-                joinparam.userType = SDKUserType.SDK_UT_WITHOUT_LOGIN;
-                JoinParam4WithoutLogin join_withoutlogin_param = new JoinParam4WithoutLogin();
-                join_withoutlogin_param.meetingNumber = UInt64.Parse(tbIDReuniao.Text);
-                join_withoutlogin_param.psw = tbSenha.Text;
-                join_withoutlogin_param.userName = tbNome.Text;
-                joinparam.withoutloginJoin = join_withoutlogin_param;
 
-                ZOOM_SDK_DOTNET_WRAP.SDKError joinerr = ZOOM_SDK_DOTNET_WRAP.CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().Join(joinparam);
-                if (joinerr != SDKError.SDKERR_SUCCESS)
-                    MessageBox.Show(joinerr.ToString());
+                string url = "https://jarbas.moebios.com.br/api/zakcode";
+                using (HttpClient client = new HttpClient())
+                {
+                    // Fazendo a requisição GET
+                    HttpResponseMessage response = client.GetAsync(url).Result;
+
+                    // Verifica se a requisição foi bem-sucedida (código de status 200)
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Lendo o conteúdo da resposta
+                        string responseBody = response.Content.ReadAsStringAsync().Result;
+
+                        StartParam startParam = new StartParam();
+                        startParam.userType = SDKUserType.SDK_UT_WITHOUT_LOGIN;
+                        StartParam4WithoutLogin start_withoutlogin_param = new StartParam4WithoutLogin();
+                        start_withoutlogin_param.meetingNumber = UInt64.Parse(tbIDReuniao.Text);
+                        start_withoutlogin_param.userZAK = responseBody;
+                        start_withoutlogin_param.userName = tbNome.Text;
+                        start_withoutlogin_param.zoomuserType = ZoomUserType.ZoomUserType_EMAIL_LOGIN;
+                        startParam.withoutloginStart = start_withoutlogin_param;
+
+                        ZOOM_SDK_DOTNET_WRAP.SDKError joinerr = ZOOM_SDK_DOTNET_WRAP.CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().Start(startParam);
+                        if (joinerr != SDKError.SDKERR_SUCCESS)
+                            MessageBox.Show(joinerr.ToString());
+                    }
+                    else
+                    {
+                        JoinParam joinparam = new JoinParam();
+                        joinparam.userType = SDKUserType.SDK_UT_WITHOUT_LOGIN;
+                        JoinParam4WithoutLogin join_withoutlogin_param = new JoinParam4WithoutLogin();
+                        join_withoutlogin_param.meetingNumber = UInt64.Parse(tbIDReuniao.Text);
+                        join_withoutlogin_param.psw = tbSenha.Text;
+                        join_withoutlogin_param.userName = tbNome.Text;
+                        joinparam.withoutloginJoin = join_withoutlogin_param;
+
+                        ZOOM_SDK_DOTNET_WRAP.SDKError joinerr = ZOOM_SDK_DOTNET_WRAP.CZoomSDKeDotNetWrap.Instance.GetMeetingServiceWrap().Join(joinparam);
+                        if (joinerr != SDKError.SDKERR_SUCCESS)
+                            MessageBox.Show(joinerr.ToString());
+                    }
+
+                }                
             }
             else//error handle.todo
             {
@@ -406,13 +435,13 @@ namespace JarbasJWL
             var exp = (long)(expirationTimeGmtMinus3 - epochStartTime).TotalSeconds;
 
             // Chave secreta para a assinatura
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tbClientSecret.Text));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("K9YErz3gD4RlvZaIreLkVJR3dAmvEgkn"));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             // Criar claims baseadas no payload fornecido
             var claims = new[]
             {
-            new Claim("appKey", tbClientID.Text),
+            new Claim("appKey", "RxIjLwIBR36dp69Jl_V4Gg"),
             new Claim(JwtRegisteredClaimNames.Iat, iat.ToString(), ClaimValueTypes.Integer64),
             new Claim(JwtRegisteredClaimNames.Exp, exp.ToString(), ClaimValueTypes.Integer64),
             new Claim("tokenExp", exp.ToString(), ClaimValueTypes.Integer64)
@@ -429,8 +458,6 @@ namespace JarbasJWL
             var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
 
             RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Jarbas");
-            key.SetValue("CID", tbClientID.Text);
-            key.SetValue("CSecret", tbClientSecret.Text);
             key.SetValue("ID", tbIDReuniao.Text);
             key.SetValue("Senha", tbSenha.Text);
             key.SetValue("Nome", tbNome.Text);

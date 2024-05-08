@@ -9,4 +9,3 @@ C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.csproj
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.exe
 C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.pdb
 C:\Jarbas\runtimes\win-x86\native\WebView2Loader.dll
-C:\Users\freit\OneDrive\Documentos\GitHub\JarbasJWL\obj\Release\JarbasJWL.csproj.AssemblyReference.cache
